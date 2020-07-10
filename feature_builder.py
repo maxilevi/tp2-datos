@@ -7,7 +7,7 @@ def process_dataset(df):
 
     _add_location_invalid_character_count_feature(df2)
     
-    return df2
+    return df2[feature_names]
 
 def _add_location_invalid_character_count_feature(df):
 	invalid_characters_regex = '#|\$|\|%|\?|!|/|;|@|\+|\*|\d'
