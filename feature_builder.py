@@ -23,6 +23,7 @@ def process_dataset(df):
     _add_length_features(df2)
     
     return df2[feature_names]
+    
 
 def _add_text_embeddings(df):
     global embeddings_dim
@@ -55,6 +56,7 @@ def _add_text_embeddings(df):
             col.append(embeddings_rows[j][i])
         df[f'embedding_{i}'] = pd.Series(col)
 
+
 def _add_length_features(df):
     def _length(x):
         return len(x) if type(x) is str else 0
@@ -74,7 +76,6 @@ def _add_location_invalid_character_count_feature(df):
         return len(re.findall(pattern, x))
     
     df['invalid_location_character_count'] = df['location'].map(count_invalid_chars)
-
 
 
 def _clean_tweet(text):
