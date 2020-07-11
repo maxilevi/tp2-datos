@@ -27,7 +27,7 @@ def normalize_document(doc):
 
 text_cleaner = np.vectorize(normalize_document)
 
-# Funcion extraída de https://towardsdatascience.com/understanding-feature-engineering-part-3-traditional-methods-for-text-data-f6f7d70acd41#:~:text=The%20importance%20of%20feature%20engineering,understood%20by%20machine%20learning%20algorithms.
+# Funcion de arriba extraída de https://towardsdatascience.com/understanding-feature-engineering-part-3-traditional-methods-for-text-data-f6f7d70acd41#:~:text=The%20importance%20of%20feature%20engineering,understood%20by%20machine%20learning%20algorithms.
 
 def feature_engineering(original_df):
     '''Devuelve una copia del df con nuevos features [location_length, keyword_count, len], además de columnas resultado de tf-idf'''
