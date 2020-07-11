@@ -1,17 +1,10 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import re
 import numpy as np
 import nltk
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
 nltk.download('stopwords')
-
-
-plt.style.use('default') # haciendo los graficos un poco mas bonitos en matplotlib
-sns.set(style="whitegrid") # seteando tipo de grid en seaborn
-pd.set_option('display.max_colwidth', None) # saco restricción para poder obtener el mensaje total de los tweets
 
 tweets = pd.read_csv('train.csv')
 
