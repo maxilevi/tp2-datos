@@ -72,6 +72,7 @@ def _add_length_features(df):
 
     df['hashtag_count'] = df['text'].map(lambda x: x.count('#'))
     df['exclamation_count'] = df['text'].map(lambda x: x.count('!'))
+    df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
 
 
 def _add_location_invalid_character_count_feature(df):
@@ -97,4 +98,3 @@ def _clean_tweet(text):
     text = re.sub('\bdis\b', ' this ', text)
     text = re.sub('\bda\b', ' the ', text)
     return text.lower()
-
