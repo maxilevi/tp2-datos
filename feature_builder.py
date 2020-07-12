@@ -64,6 +64,7 @@ def _add_length_features(df):
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
     df['location_length'] = df['location'].map(_length)
+    df['keywords_mean_length_encoding']=df.groupby('keyword')['text_length'].transform('mean')
 
 
 def _add_location_invalid_character_count_feature(df):
@@ -89,4 +90,3 @@ def _clean_tweet(text):
     text = re.sub('\bdis\b', ' this ', text)
     text = re.sub('\bda\b', ' the ', text)
     return text.lower()
-
