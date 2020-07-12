@@ -1,33 +1,36 @@
 import re
 import pandas as pd
 import numpy as np
+import collections
 from gensim.models import KeyedVectors
 from keras.preprocessing.text import Tokenizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 embedding_dim = 300 
 embeddings_path = './data/embeddings/word2vec.bin'
 embeddings = None
-feature_names = ['invalid_location_character_count', 'keyword_length', 'text_length', 'location_length'] + [f'embedding_{i}' for i in range(embedding_dim)]
 
 def process_dataset(df):
     df2 = df.copy()
-    global embeddings
-    global embeddings_path
     global feature_names
-
-    if embeddings is None:
-        embeddings = KeyedVectors.load_word2vec_format(embeddings_path, binary=True)
 
     _add_text_embeddings(df2)
     _add_location_invalid_character_count_feature(df2)
     _add_length_features(df2)
     
-    return df2[feature_names]
-    
+    df2.drop(['text', 'location', 'keyword', 'target', 'id'], axis=1, inplace=True)
+    return df2
+
+
 
 def _add_text_embeddings(df):
     global embeddings_dim
     global embeddings
+    global embeddings_path
+
+    if embeddings is None:
+        embeddings = KeyedVectors.load_word2vec_format(embeddings_path, binary=True)
+
     text_values = [ _clean_tweet(x) for x in df['text'].values]
 
     tokenizer = Tokenizer()
@@ -54,7 +57,8 @@ def _add_text_embeddings(df):
         col = []
         for j in range(len(embeddings_rows)):
             col.append(embeddings_rows[j][i])
-        df[f'embedding_{i}'] = pd.Series(col)
+        df[f'text_embedding_{i}'] = pd.Series(col)
+
 
 
 def _add_length_features(df):
@@ -64,6 +68,10 @@ def _add_length_features(df):
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
     df['location_length'] = df['location'].map(_length)
+    df['text_word_count'] = df['text'].map(lambda x: len(x.split(' ')))
+
+    df['hashtag_count'] = df['text'].map(lambda x: x.count('#'))
+    df['exclamation_count'] = df['text'].map(lambda x: x.count('!'))
 
 
 def _add_location_invalid_character_count_feature(df):
@@ -79,7 +87,7 @@ def _add_location_invalid_character_count_feature(df):
 
 
 def _clean_tweet(text):
-    return text.lower()# temp
+    return text.lower() if type(text) is str else str()# temp
     text = re.sub('@.*?(\s*)', str(), text)
     text = re.sub('http(s?):\/\/.*\s*', str(), text)
     text = re.sub('\?*', str(), text)
