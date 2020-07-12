@@ -13,6 +13,8 @@ embeddings = None
 def process_dataset(df):
     df2 = df.copy()
     global feature_names
+    
+    df['keyword'] = df['keyword'].fillna('NAN_KEYWORD') #Reemplazo los Na con NAN_KEYWORD para poder agruparlos
 
     _add_text_embeddings(df2)
     _add_location_invalid_character_count_feature(df2)
