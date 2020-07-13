@@ -70,6 +70,7 @@ def _add_length_features(df):
     df['location_length'] = df['location'].map(_length)
     df['text_word_count'] = df['text'].map(lambda x: len(x.split(' ')))
 
+    df['text_word_count'] = df['text'].map(lambda x: len(x.split(' ')))
     df['hashtag_count'] = df['text'].map(lambda x: x.count('#'))
     df['exclamation_count'] = df['text'].map(lambda x: x.count('!'))
     df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
