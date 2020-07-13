@@ -76,6 +76,7 @@ def _add_length_features(df):
     df['char_count'] = df['text'].map(lambda x: len(x))
     df['exclamation_count'] = df['text'].map(lambda x: x.count('!'))
     df['interrogation_count'] = df['text'].map(lambda x: x.count('?'))
+    df['url_count'] = df['text'].map(lambda x: len([w for w in str(x).lower().split() if 'http' in w or 'https' in w]))
     df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
 
 
