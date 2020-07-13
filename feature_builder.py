@@ -4,7 +4,7 @@ import numpy as np
 import collections
 from gensim.models import KeyedVectors
 from keras.preprocessing.text import Tokenizer
-from sklearn.feature_extraction.text import TfidfVectorizer
+import math
 
 embedding_dim = 300 
 embeddings_path = './data/embeddings/word2vec.bin'
