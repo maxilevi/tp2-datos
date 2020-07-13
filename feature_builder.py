@@ -5,6 +5,7 @@ import collections
 from gensim.models import KeyedVectors
 from keras.preprocessing.text import Tokenizer
 import math
+import nltk
 
 embedding_dim = 300 
 embeddings_path = './data/embeddings/word2vec.bin'
@@ -65,12 +66,15 @@ def _add_length_features(df):
     def _length(x):
         return len(x) if type(x) is str else 0
 
+    #stopwords = set(nltk.corpus.stopwords.words('english'))
+
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
     df['location_length'] = df['location'].map(_length)
-    df['text_word_count'] = df['text'].map(lambda x: len(x.split(' ')))
 
     df['text_word_count'] = df['text'].map(lambda x: len(x.split(' ')))
+    #df['stop_word_count'] = df_test['text'].map(lambda x: len([w for w in str(x).lower().split() if w in stopwords]))
+    #df['punctuation_count'] = df['text'].map(lambda x: len([c for c in str(x) if c in string.punctuation]))
     df['hashtag_count'] = df['text'].map(lambda x: x.count('#'))
     df['mention_count'] = df['text'].map(lambda x: x.count('@'))
     df['char_count'] = df['text'].map(lambda x: len(x))
