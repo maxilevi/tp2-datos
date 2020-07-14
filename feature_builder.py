@@ -14,8 +14,6 @@ embeddings = None
 def process_dataset(df):
     df2 = df.copy()
     global feature_names
-    
-    df['keyword'] = df['keyword'].fillna('NAN_KEYWORD') #Reemplazo los Na con NAN_KEYWORD para poder agruparlos
 
     _add_text_embeddings(df2)
     _add_location_invalid_character_count_feature(df2)
@@ -71,6 +69,7 @@ def _add_length_features(df):
         return len(x) if type(x) is str else 0
 
     #stopwords = set(nltk.corpus.stopwords.words('english'))
+    df['keyword'] = df['keyword'].fillna('NAN_KEYWORD') #Reemplazo los Na con NAN_KEYWORD para poder agruparlos
 
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
@@ -94,7 +93,7 @@ def _add_length_features(df):
     df['num_unique_words'] = df['text'].apply(lambda x: len(set(w for w in x.split())))
     df['words_vs_unique'] = df['num_unique_words'] / df['text_word_count']
     
-    df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
+    #df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
 
 
 def _add_location_invalid_character_count_feature(df):
