@@ -77,8 +77,8 @@ def _add_length_features(df):
     df['location_length'] = df['location'].map(_length)
 
     df['text_word_count'] = df['text'].map(lambda x: len(x.split(' ')))
-    #df['stop_word_count'] = df_test['text'].map(lambda x: len([w for w in str(x).lower().split() if w in stopwords]))
-    #df['punctuation_count'] = df['text'].map(lambda x: len([c for c in str(x) if c in string.punctuation]))
+#     df['stop_word_count'] = df_test['text'].map(lambda x: len([w for w in str(x).lower().split() if w in stopwords]))
+#     df['punctuation_count'] = df['text'].map(lambda x: len([c for c in str(x) if c in string.punctuation]))
     df['hashtag_count'] = df['text'].map(lambda x: x.count('#'))
     df['mention_count'] = df['text'].map(lambda x: x.count('@'))
     df['char_count'] = df['text'].map(lambda x: len(x))
@@ -88,6 +88,12 @@ def _add_length_features(df):
     df['word_count'] = df['text'].map(lambda x: len(str(x).split()))
     df['unique_word_count'] = df['text'].map(lambda x: len(set(str(x).split())))
 
+#     andy
+    df['word_density'] = df['text_word_count'] / (df['char_count'] + 1)
+    df['capitals'] = df['text'].apply(lambda comment: sum(1 for c in comment if c.isupper()))
+    df['num_unique_words'] = df['text'].apply(lambda x: len(set(w for w in x.split())))
+    df['words_vs_unique'] = df['num_unique_words'] / df['text_word_count']
+    
     df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
 
 
