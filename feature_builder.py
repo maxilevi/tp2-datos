@@ -21,7 +21,9 @@ def process_dataset(df):
     _add_location_invalid_character_count_feature(df2)
     _add_length_features(df2)
     
-    df2.drop(['text', 'location', 'keyword', 'target', 'id'], axis=1, inplace=True)
+    df2.drop(['text', 'location', 'keyword', 'id'], axis=1, inplace=True)
+    if 'target' in df2.columns:
+        df2.drop(['target'], axis=1, inplace=True)
     return df2
 
 
