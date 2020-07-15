@@ -62,6 +62,29 @@ def _add_text_embeddings(df):
             col.append(embeddings_rows[j][i])
         df[f'text_embedding_{i}'] = pd.Series(col)
 
+def _calculate_mean_encoding(df):
+    global mean_encodings
+
+    df['keyword'] = df['keyword'].fillna('NAN_KEYWORD')
+    df['keyword'] = df['keyword'].map(lambda x: _clean_keyword(x)) 
+
+    if 'target' in df.columns:
+
+        alpha = 3000.0
+        global_mean = df['target'].mean()
+        rows_range = len(df)
+        
+        df['mean_keyword'] = df.groupby('keyword')['target'].transform('mean')
+        df['mean_encode'] = (rows_range * df['mean_keyword'] + global_mean * alpha)/(rows_range + alpha)
+        mean_encodings = df.groupby('keyword')['mean_encode'].apply(lambda g: g.values[0]).to_dict()
+        df.drop(['mean_keyword', 'mean_encode'], inplace=True, axis=1)
+
+    #df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
+
+    # One hot encoding
+    #unique_keywords = set(df['keyword'])
+    #for keyword in unique_keywords:
+    #    df[keyword] = df['keyword'].map(lambda x: 1 if x == keyword else 0)
 
 
 def _add_length_features(df):
