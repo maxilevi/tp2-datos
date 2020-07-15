@@ -6,10 +6,16 @@ from gensim.models import KeyedVectors
 from keras.preprocessing.text import Tokenizer
 import math
 import nltk
+import string
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+from nltk import word_tokenize, pos_tag
+from nltk import word_tokenize
 
 embedding_dim = 300 
 embeddings_path = './data/embeddings/word2vec.bin'
 embeddings = None
+mean_encodings = None
 
 def process_dataset(df):
     df2 = df.copy()
