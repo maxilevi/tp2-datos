@@ -21,9 +21,9 @@ def process_dataset(df):
     df2 = df.copy()
     global feature_names
 
-    _add_text_embeddings(df2)
     _add_location_invalid_character_count_feature(df2)
     _add_length_features(df2)
+    _add_text_embeddings(df2)
     
     df2.drop(['text', 'location', 'keyword', 'id'], axis=1, inplace=True)
     if 'target' in df2.columns:
@@ -46,6 +46,9 @@ def _add_text_embeddings(df):
     tokenizer.fit_on_texts(text_values)
     inv_word_index = {v: k for k, v in tokenizer.word_index.items()}
     as_sequences = tokenizer.texts_to_sequences(text_values)
+    vocab_size = len(tokenizer.word_index)
+    percentage = len([1 for word in tokenizer.word_index if word in embeddings]) / vocab_size
+    print(f"Percentage of words covered in the embeddings = {percentage}")
 
     embeddings_rows = []
     for j in range(len(as_sequences)):
@@ -97,8 +100,14 @@ def _add_length_features(df):
     def _length(x):
         return len(x) if type(x) is str else 0
 
-    #stopwords = set(nltk.corpus.stopwords.words('english'))
-    df['keyword'] = df['keyword'].fillna('NAN_KEYWORD') #Reemplazo los Na con NAN_KEYWORD para poder agruparlos
+    try:
+        stopwords = set(nltk.corpus.stopwords.words('english'))
+    except LookupError:
+        nltk.download('stopwords')
+        _add_length_features(df)
+        return
+
+    _calculate_mean_encoding(df)
 
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
