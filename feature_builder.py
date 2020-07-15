@@ -108,14 +108,53 @@ def _add_location_invalid_character_count_feature(df):
     df['invalid_location_character_count'] = df['location'].map(count_invalid_chars)
 
 
-def _clean_tweet(text):
-    return text.lower() if type(text) is str else str()# temp
-    text = re.sub('@.*?(\s*)', str(), text)
-    text = re.sub('http(s?):\/\/.*\s*', str(), text)
-    text = re.sub('\?*', str(), text)
-    text = re.sub('OffensiveåÊContent', 'offensive content', text)
-    text = re.sub('\n', str(), text)
-    text = re.sub('#(.*?)(\s|$)', ' ', text)
-    text = re.sub('\bdis\b', ' this ', text)
-    text = re.sub('\bda\b', ' the ', text)
-    return text.lower()
+def _clean_keyword(keyword):
+    keyword = keyword.replace('%20', ' ')
+    return keyword.lower()
+
+def _clean_tweet(x):
+    x = decontracted(x)
+    x = remove_punctuations(x)
+    x = word_tokenize(x)
+    x = remove_stopwords(x)
+    x = stemming_and_lemmatization(x)
+    return ' '.join(x).lower()
+
+def decontracted(phrase):
+    # specific
+    phrase = re.sub(r"won\'t", "will not", phrase)
+    phrase = re.sub(r"can\'t", "can not", phrase)
+    # general
+    phrase = re.sub(r"n\'t", " not", phrase)
+    phrase = re.sub(r"\'re", " are", phrase)
+    phrase = re.sub(r"\'s", " is", phrase)
+    phrase = re.sub(r"\'d", " would", phrase)
+    phrase = re.sub(r"\'ll", " will", phrase)
+    phrase = re.sub(r"\'t", " not", phrase)
+    phrase = re.sub(r"\'ve", " have", phrase)
+    phrase = re.sub(r"\'m", " am", phrase)
+    return phrase
+
+def stemming_and_lemmatization(x):
+    lemmatizer = WordNetLemmatizer()
+    y = [lemmatizer.lemmatize(w, get_pos(w)) for w in x]
+    return y
+
+def get_pos(word):
+    tag = nltk.pos_tag([word])[0][1][0].upper()
+    tag_dict = {"J": wordnet.ADJ,
+                "N": wordnet.NOUN,
+                "V": wordnet.VERB,
+                "R": wordnet.ADV}
+
+    return tag_dict.get(tag, wordnet.NOUN)
+
+def remove_stopwords(x):
+    stopwords = set(nltk.corpus.stopwords.words('english'))
+    return ([word for word in x if word not in stopwords])
+
+def remove_punctuations(x):
+    x = re.sub(re.compile('((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?',flags=re.MULTILINE), '', x)
+    x = re.sub('[^\w\s]','', x)
+    x = re.sub("[^a-zA-Z\s]+", '', x)
+    return x
