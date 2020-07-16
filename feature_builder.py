@@ -135,7 +135,7 @@ def _add_length_features(df):
     #df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
 
 
-def _add_location_invalid_character_count_feature(df):
+def _add_location_features(df):
     invalid_characters_regex = '#|\$|\|%|\?|!|/|;|@|\+|\*|\d'
     pattern = re.compile(invalid_characters_regex)
     
@@ -143,8 +143,11 @@ def _add_location_invalid_character_count_feature(df):
         if type(x) is float:
             return 0
         return len(re.findall(pattern, x))
+
+    df['location'] = df['location'].fillna('')
     
     df['invalid_location_character_count'] = df['location'].map(count_invalid_chars)
+    df['location_is_place'] = df['location'].map(lambda x: len(re.findall(re.compile('[a-z]*?,\s*[a-z]*'), x.lower())))
 
 
 def _clean_keyword(keyword):
