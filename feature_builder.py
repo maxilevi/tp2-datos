@@ -88,7 +88,7 @@ def _calculate_mean_encoding(df):
         mean_encodings = df.groupby('keyword')['mean_encode'].apply(lambda g: g.values[0]).to_dict()
         df.drop(['mean_keyword', 'mean_encode'], inplace=True, axis=1)
 
-    df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
+    #df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
 
     # One hot encoding
     #unique_keywords = set(df['keyword'])
@@ -123,7 +123,6 @@ def _add_length_features(df):
     df['punctuation_count'] = df['text'].map(lambda x: len([c for c in str(x) if c in string.punctuation]))
     df['hashtag_count'] = df['text'].map(lambda x: x.count('#'))
     df['mention_count'] = df['text'].map(lambda x: x.count('@'))
-    df['char_count'] = df['text'].map(lambda x: len(x))
     df['exclamation_count'] = df['text'].map(lambda x: x.count('!'))
     df['interrogation_count'] = df['text'].map(lambda x: x.count('?'))
     df['url_count'] = df['text'].map(lambda x: len([w for w in str(x).lower().split() if 'http' in w or 'https' in w]))
@@ -132,24 +131,29 @@ def _add_length_features(df):
     df['space_in_keyword'] = df['keyword'].map(lambda x: x.count(' '))
     df['number_count'] = df['text'].map(lambda x: len([1 for y in x if y.isdigit()]))
     df['single_quote_count'] = df['text'].map(lambda x: x.count('\''))
-    df['asterisk_count'] = df['text'].map(lambda x: x.count('*'))
-    df['underscore_count'] = df['text'].map(lambda x: x.count('_'))
-    df['double_quote_count'] = df['text'].map(lambda x: x.count('\"'))
-    df['single_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(re.compile('\'.*?\''), x)]))
-    df['double_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(re.compile('\".*?\"'), x)]))
-    df['retweet_count'] = df['text'].map(lambda x: len(re.findall(re.compile('\bRT\b'), x.upper())) + len(re.findall(re.compile('\bRETWEET\b'), x.upper())))
-    df['formal_keyword_count'] = df['text'].map(lambda x: sum([1 for w in x.lower().split() if w in formal_keyword_list]))
+    #df['asterisk_count'] = df['text'].map(lambda x: x.count('*'))
+    #df['underscore_count'] = df['text'].map(lambda x: x.count('_'))
+    #df['double_quote_count'] = df['text'].map(lambda x: x.count('\"'))
+    df['single_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(r'\'.*?\'', x)]))
+    #df['double_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(r'\".*?\"', x)]))
+    #df['retweet_count'] = df['text'].map(lambda x: len(re.findall(r'\bRT\b', x.upper())) + len(re.findall(r'\bRETWEET\b', x.upper())))
+    #df['formal_keyword_count'] = df['text'].map(lambda x: sum([1 for w in x.lower().split() if w in formal_keyword_list]))
     df['capitals_percentage'] = df['text'].map(
         lambda x: sum(1 for c in x if c.isupper() and c.isalpha()) / sum(1 for c in x if c.isalpha())
     )
-    df['text_in_brackets'] = df['text'].map(lambda x: len(re.findall(re.compile('\[.*?\]'), x)))
+    df['space_percentage'] = df['text'].map(lambda x: sum(1 for c in x if c.isspace()) / len(x))
+    df['unique_chars'] = df['text'].map(lambda x: len(set(x)))
+    df['unique_chars_percentage'] = df['unique_chars'] / df['text_length']
+    #df['text_in_brackets'] = df['text'].map(lambda x: len(re.findall(r'\[.*?\]', x)))
+    df['mention_chars'] = df['text'].map(lambda x: sum(len(x) for x in re.findall(r'@.*?\b', x)))
+    df['mention_percentage'] = df['mention_chars'] / df['text_length']
 
-    time_pattern = re.compile('\d:\d')
+    time_pattern = r'\d:\d'
     df['time_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
-    emoji_pattern = re.compile('(:|;)\s*?(\)|D|d|p|s|\/|\(|S|P)')
+    emoji_pattern = r'(:|;)\s*?(\)|D|d|p|s|\/|\(|S|P)'
     df['emojis_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
 
-    df['word_density'] = df['word_count'] / (df['char_count'] + 1)
+    df['word_density'] = df['word_count'] / (df['text_length'] + 1)
     df['capitals'] = df['text'].apply(lambda comment: sum(1 for c in comment if c.isupper()))
     df['num_unique_words'] = df['text'].apply(lambda x: len(set(w for w in x.split())))
     df['words_vs_unique'] = df['num_unique_words'] / df['word_count']
@@ -159,18 +163,15 @@ def _add_length_features(df):
 
 
 def _add_location_features(df):
-    invalid_characters_regex = '#|\$|\|%|\?|!|/|;|@|\+|\*|\d'
-    pattern = re.compile(invalid_characters_regex)
-    
     def count_invalid_chars(x):
         if type(x) is float:
             return 0
-        return len(re.findall(pattern, x))
+        return len(re.findall(r'#|\$|\|%|\?|!|/|;|@|\+|\*|\d|:', x))
 
     df['location'] = df['location'].fillna('')
     
     df['invalid_location_character_count'] = df['location'].map(count_invalid_chars)
-    df['location_is_place'] = df['location'].map(lambda x: len(re.findall(re.compile('[a-z]*?,\s*[a-z]*'), x.lower())))
+    df['location_is_place'] = df['location'].map(lambda x: len(re.findall(r'[a-z]*?,\s*[a-z]*', x.lower())))
 
 
 def _clean_keyword(keyword):
