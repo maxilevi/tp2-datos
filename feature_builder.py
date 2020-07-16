@@ -74,7 +74,7 @@ def _add_text_embeddings(df):
 def _calculate_mean_encoding(df):
     global mean_encodings
 
-    df['keyword'] = df['keyword'].fillna('NAN_KEYWORD')
+    df['keyword'] = df['keyword'].fillna('')
     df['keyword'] = df['keyword'].map(lambda x: _clean_keyword(x)) 
 
     if 'target' in df.columns:
