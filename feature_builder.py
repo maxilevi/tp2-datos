@@ -79,7 +79,7 @@ def _calculate_mean_encoding(df):
 
     if 'target' in df.columns:
 
-        alpha = 3000.0
+        alpha = 1000.0
         global_mean = df['target'].mean()
         rows_range = len(df)
         
