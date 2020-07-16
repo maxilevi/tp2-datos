@@ -88,7 +88,7 @@ def _calculate_mean_encoding(df):
         mean_encodings = df.groupby('keyword')['mean_encode'].apply(lambda g: g.values[0]).to_dict()
         df.drop(['mean_keyword', 'mean_encode'], inplace=True, axis=1)
 
-    #df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
+    df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
 
     # One hot encoding
     #unique_keywords = set(df['keyword'])
