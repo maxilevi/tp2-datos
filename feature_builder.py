@@ -79,7 +79,7 @@ def _calculate_mean_encoding(df):
 
     if 'target' in df.columns:
 
-        alpha = 10000.0
+        alpha = 2000.0
         global_mean = df['target'].mean()
         rows_range = len(df)
         
@@ -88,16 +88,16 @@ def _calculate_mean_encoding(df):
         mean_encodings = df.groupby('keyword')['mean_encode'].apply(lambda g: g.values[0]).to_dict()
         df.drop(['mean_keyword', 'mean_encode'], inplace=True, axis=1)
 
-    #df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
+    df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
 
     # One hot encoding
     #unique_keywords = set(df['keyword'])
     #for keyword in unique_keywords:
     #    df[keyword] = df['keyword'].map(lambda x: 1 if x == keyword else 0)
 
-    df['text_length'] = df['text'].map(lambda x: len(x))
-    df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
-    df.drop(['text_length'], inplace=True, axis=1)
+    #df['text_length'] = df['text'].map(lambda x: len(x))
+    #df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
+    #df.drop(['text_length'], inplace=True, axis=1)
 
 
 def _add_length_features(df):
