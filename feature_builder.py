@@ -21,7 +21,7 @@ def process_dataset(df):
     df2 = df.copy()
     global feature_names
 
-    _add_location_invalid_character_count_feature(df2)
+    _add_location_features(df2)
     _add_length_features(df2)
     _add_text_embeddings(df2)
     
