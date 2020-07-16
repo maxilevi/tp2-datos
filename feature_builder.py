@@ -107,6 +107,12 @@ def _add_length_features(df):
         _add_length_features(df)
         return
 
+    formal_keyword_list = [
+        'experts',
+        'breaking',
+        'accident'
+    ]
+
     _calculate_mean_encoding(df)
 
     df['keyword_length'] = df['keyword'].map(_length)
@@ -124,8 +130,25 @@ def _add_length_features(df):
     df['word_count'] = df['text'].map(lambda x: len(str(x).split()))
     df['unique_word_count'] = df['text'].map(lambda x: len(set(str(x).split())))
     df['space_in_keyword'] = df['keyword'].map(lambda x: x.count(' '))
+    df['number_count'] = df['text'].map(lambda x: len([1 for y in x if y.isdigit()]))
+    df['single_quote_count'] = df['text'].map(lambda x: x.count('\''))
+    df['asterisk_count'] = df['text'].map(lambda x: x.count('*'))
+    df['underscore_count'] = df['text'].map(lambda x: x.count('_'))
+    df['double_quote_count'] = df['text'].map(lambda x: x.count('\"'))
+    df['single_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(re.compile('\'.*?\''), x)]))
+    df['double_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(re.compile('\".*?\"'), x)]))
+    df['retweet_count'] = df['text'].map(lambda x: len(re.findall(re.compile('\bRT\b'), x.upper())) + len(re.findall(re.compile('\bRETWEET\b'), x.upper())))
+    df['formal_keyword_count'] = df['text'].map(lambda x: sum([1 for w in x.lower().split() if w in formal_keyword_list]))
+    df['capitals_percentage'] = df['text'].map(
+        lambda x: sum(1 for c in x if c.isupper() and c.isalpha()) / sum(1 for c in x if c.isalpha())
+    )
+    df['text_in_brackets'] = df['text'].map(lambda x: len(re.findall(re.compile('\[.*?\]'), x)))
 
-#     andy
+    time_pattern = re.compile('\d:\d')
+    df['time_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
+    emoji_pattern = re.compile('(:|;)\s*?(\)|D|d|p|s|\/|\(|S|P)')
+    df['emojis_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
+
     df['word_density'] = df['word_count'] / (df['char_count'] + 1)
     df['capitals'] = df['text'].apply(lambda comment: sum(1 for c in comment if c.isupper()))
     df['num_unique_words'] = df['text'].apply(lambda x: len(set(w for w in x.split())))
