@@ -79,7 +79,7 @@ def _calculate_mean_encoding(df):
 
     if 'target' in df.columns:
 
-        alpha = 1000.0
+        alpha = 10000.0
         global_mean = df['target'].mean()
         rows_range = len(df)
         
@@ -94,6 +94,10 @@ def _calculate_mean_encoding(df):
     #unique_keywords = set(df['keyword'])
     #for keyword in unique_keywords:
     #    df[keyword] = df['keyword'].map(lambda x: 1 if x == keyword else 0)
+
+    df['text_length'] = df['text'].map(lambda x: len(x))
+    df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
+    df.drop(['text_length'], inplace=True, axis=1)
 
 
 def _add_length_features(df):
@@ -157,9 +161,6 @@ def _add_length_features(df):
     df['capitals'] = df['text'].apply(lambda comment: sum(1 for c in comment if c.isupper()))
     df['num_unique_words'] = df['text'].apply(lambda x: len(set(w for w in x.split())))
     df['words_vs_unique'] = df['num_unique_words'] / df['word_count']
-
-    
-    #df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
 
 
 def _add_location_features(df):
