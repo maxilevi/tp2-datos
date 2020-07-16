@@ -100,7 +100,7 @@ def _calculate_mean_encoding(df):
     #df.drop(['text_length'], inplace=True, axis=1)
 
 
-def _add_length_features(df):
+def add_manual_text_features(df):
     def _length(x):
         return len(x) if type(x) is str else 0
 
@@ -156,7 +156,7 @@ def _add_length_features(df):
     df['words_vs_unique'] = df['num_unique_words'] / df['word_count']
 
 
-def _add_location_features(df):
+def add_location_features(df):
     def count_invalid_chars(x):
         if type(x) is float:
             return 0
@@ -173,14 +173,14 @@ def _clean_keyword(keyword):
     return keyword.lower()
 
 def _clean_tweet(x):
-    x = decontracted(x)
-    x = remove_punctuations(x)
+    x = _decontracted(x)
+    x = _remove_punctuations(x)
     x = word_tokenize(x)
-    x = remove_stopwords(x)
-    x = stemming_and_lemmatization(x)
+    x = _remove_stopwords(x)
+    x = _stemming_and_lemmatization(x)
     return ' '.join(x).lower()
 
-def decontracted(phrase):
+def _decontracted(phrase):
     # specific
     phrase = re.sub(r"won\'t", "will not", phrase)
     phrase = re.sub(r"can\'t", "can not", phrase)
@@ -195,7 +195,7 @@ def decontracted(phrase):
     phrase = re.sub(r"\'m", " am", phrase)
     return phrase
 
-def stemming_and_lemmatization(x):
+def _stemming_and_lemmatization(x):
     lemmatizer = WordNetLemmatizer()
     y = [lemmatizer.lemmatize(w, get_pos(w)) for w in x]
     return y
@@ -209,11 +209,11 @@ def get_pos(word):
 
     return tag_dict.get(tag, wordnet.NOUN)
 
-def remove_stopwords(x):
+def _remove_stopwords(x):
     stopwords = set(nltk.corpus.stopwords.words('english'))
     return ([word for word in x if word not in stopwords])
 
-def remove_punctuations(x):
+def _remove_punctuations(x):
     x = re.sub(re.compile('((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?',flags=re.MULTILINE), '', x)
     x = re.sub('[^\w\s]','', x)
     x = re.sub("[^a-zA-Z\s]+", '', x)
