@@ -17,13 +17,27 @@ embeddings_path = './data/embeddings/word2vec.bin'
 embeddings = None
 mean_encodings = None
 
-def process_dataset(df):
+def process_dataset(df, encoding_type='mean', text_type='embeddings', use_feature_hashing=False):
     df2 = df.copy()
     global feature_names
 
-    _add_location_features(df2)
-    _add_length_features(df2)
-    _add_text_embeddings(df2)
+    add_location_features(df2)
+    add_manual_text_features(df2)
+
+    if text_type == 'embeddings':
+        add_text_embeddings(df2)
+
+    elif text_type == 'tfidf':
+        add_text_tfidf(df2)
+
+    elif text_type == 'bow':
+        add_text_bow(df2)
+
+    elif text_type == 'none':
+        pass
+
+    if use_feature_hashing:
+        add_feature_hashing(df2)
     
     df2.drop(['text', 'location', 'keyword', 'id'], axis=1, inplace=True)
     if 'target' in df2.columns:
@@ -31,8 +45,17 @@ def process_dataset(df):
     return df2
 
 
+def add_text_bow(df2):
+    pass
 
-def _add_text_embeddings(df):
+def add_text_tfidf(df2):
+    pass
+
+def add_feature_hashing(df2):
+    pass
+
+
+def add_text_embeddings(df):
     global embeddings_dim
     global embeddings
     global embeddings_path
@@ -71,33 +94,41 @@ def _add_text_embeddings(df):
             col.append(embeddings_rows[j][i])
         df[f'text_embedding_{i}'] = pd.Series(col)
 
-def _calculate_mean_encoding(df):
+def calculate_mean_encoding(df, encoding_type='mean'):
     global mean_encodings
 
     df['keyword'] = df['keyword'].fillna('')
     df['keyword'] = df['keyword'].map(lambda x: _clean_keyword(x)) 
 
-    if 'target' in df.columns:
+    if encoding_type == 'mean':
+        if 'target' in df.columns:
 
-        alpha = 2000.0
-        global_mean = df['target'].mean()
-        rows_range = len(df)
-        
-        df['mean_keyword'] = df.groupby('keyword')['target'].transform('mean')
-        df['mean_encode'] = (rows_range * df['mean_keyword'] + global_mean * alpha)/(rows_range + alpha)
-        mean_encodings = df.groupby('keyword')['mean_encode'].apply(lambda g: g.values[0]).to_dict()
-        df.drop(['mean_keyword', 'mean_encode'], inplace=True, axis=1)
+            alpha = 5000.0
+            global_mean = df['target'].mean()
+            rows_range = len(df)
+            
+            df['mean_keyword'] = df.groupby('keyword')['target'].transform('mean')
+            df['mean_encode'] = (rows_range * df['mean_keyword'] + global_mean * alpha)/(rows_range + alpha)
+            mean_encodings = df.groupby('keyword')['mean_encode'].apply(lambda g: g.values[0]).to_dict()
+            df.drop(['mean_keyword', 'mean_encode'], inplace=True, axis=1)
 
-    df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
+        df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
 
-    # One hot encoding
-    #unique_keywords = set(df['keyword'])
-    #for keyword in unique_keywords:
-    #    df[keyword] = df['keyword'].map(lambda x: 1 if x == keyword else 0)
+    elif 'one_hot':
+        unique_keywords = set(df['keyword'])
+        for keyword in unique_keywords:
+            df[keyword] = df['keyword'].map(lambda x: 1 if x == keyword else 0)
 
-    #df['text_length'] = df['text'].map(lambda x: len(x))
-    #df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
-    #df.drop(['text_length'], inplace=True, axis=1)
+    elif 'mean_length':
+        df['text_length'] = df['text'].map(lambda x: len(x))
+        df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
+        df.drop(['text_length'], inplace=True, axis=1)
+
+    elif 'none':
+        pass
+
+    else:
+        raise KeyError(f'Invalid encoding {encoding_type}')
 
 
 def add_manual_text_features(df):
