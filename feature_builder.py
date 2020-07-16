@@ -111,12 +111,6 @@ def _add_length_features(df):
         _add_length_features(df)
         return
 
-    formal_keyword_list = [
-        'experts',
-        'breaking',
-        'accident'
-    ]
-
     _calculate_mean_encoding(df)
 
     df['keyword_length'] = df['keyword'].map(_length)
@@ -141,7 +135,6 @@ def _add_length_features(df):
     df['single_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(r'\'.*?\'', x)]))
     #df['double_quote_length'] = df['text'].map(lambda x: sum([len(x) for x in re.findall(r'\".*?\"', x)]))
     #df['retweet_count'] = df['text'].map(lambda x: len(re.findall(r'\bRT\b', x.upper())) + len(re.findall(r'\bRETWEET\b', x.upper())))
-    #df['formal_keyword_count'] = df['text'].map(lambda x: sum([1 for w in x.lower().split() if w in formal_keyword_list]))
     df['capitals_percentage'] = df['text'].map(
         lambda x: sum(1 for c in x if c.isupper() and c.isalpha()) / sum(1 for c in x if c.isalpha())
     )
