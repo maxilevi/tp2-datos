@@ -70,8 +70,13 @@ def add_text_tfidf(df, clean_text):
     _add_text_using_vectorizer(df, clean_text, TfidfVectorizer())
 
 
+def reduce_dimensions(df, dims):
+    pca = PCA(n_components=dims)
+    matrix = pca.fit_transform(df)
+    new_df = pd.DataFrame(data=matrix, columns=[f'dim_{i}' for i in range(dims)])
+    return new_df
 
-def add_text_embeddings(df):
+
     global embeddings_dim
     global embeddings
     global embeddings_path
