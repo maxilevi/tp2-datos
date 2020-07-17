@@ -11,6 +11,9 @@ from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
 from nltk import word_tokenize, pos_tag
 from nltk import word_tokenize
+from sklearn.feature_extraction import FeatureHasher
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.decomposition import PCA
 
 embedding_dim = 300 
 embeddings_path = './data/embeddings/word2vec.bin'
@@ -163,8 +166,6 @@ def add_manual_text_features(df):
         nltk.download('stopwords')
         _add_length_features(df)
         return
-
-    _calculate_mean_encoding(df)
 
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
