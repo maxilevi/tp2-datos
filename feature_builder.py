@@ -17,31 +17,33 @@ embeddings_path = './data/embeddings/word2vec.bin'
 embeddings = None
 mean_encodings = None
 
-def process_dataset(df, encoding_type='mean', text_type='embeddings', use_feature_hashing=False):
+def process_dataset(df, encoding_type='mean', text_type='embeddings', target_dimensions=None, clean_text=False):
     df2 = df.copy()
     global feature_names
 
     add_location_features(df2)
+    calculate_keyword_encoding(df2, encoding_type=encoding_type)
     add_manual_text_features(df2)
 
     if text_type == 'embeddings':
-        add_text_embeddings(df2)
+        add_text_embeddings(df2, clean_text=clean_text)
 
     elif text_type == 'tfidf':
-        add_text_tfidf(df2)
+        add_text_tfidf(df2, clean_text=clean_text)
 
     elif text_type == 'bow':
-        add_text_bow(df2)
+        add_text_bow(df2, clean_text=clean_text)
 
     elif text_type == 'none':
         pass
-
-    if use_feature_hashing:
-        add_feature_hashing(df2)
     
     df2.drop(['text', 'location', 'keyword', 'id'], axis=1, inplace=True)
     if 'target' in df2.columns:
         df2.drop(['target'], axis=1, inplace=True)
+
+    if target_dimensions:
+        df2 = reduce_dimensions(df2, dims=target_dimensions)
+
     return df2
 
 
