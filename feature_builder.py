@@ -22,7 +22,7 @@ def process_dataset(df, encoding_type='mean', text_type='embeddings', use_featur
     global feature_names
 
     add_location_features(df2)
-    add_manual_text_features(df2)
+    add_manual_text_features(df2,encoding_type)
 
     if text_type == 'embeddings':
         add_text_embeddings(df2)
@@ -94,7 +94,7 @@ def add_text_embeddings(df):
             col.append(embeddings_rows[j][i])
         df[f'text_embedding_{i}'] = pd.Series(col)
 
-def calculate_mean_encoding(df, encoding_type='mean'):
+def calculate_mean_encoding(df, encoding_type):
     global mean_encodings
 
     df['keyword'] = df['keyword'].fillna('')
@@ -114,24 +114,38 @@ def calculate_mean_encoding(df, encoding_type='mean'):
 
         df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
 
-    elif 'one_hot':
+    elif encoding_type == 'one_hot':
         unique_keywords = set(df['keyword'])
         for keyword in unique_keywords:
             df[keyword] = df['keyword'].map(lambda x: 1 if x == keyword else 0)
 
-    elif 'mean_length':
+    elif encoding_type == 'mean_length':
         df['text_length'] = df['text'].map(lambda x: len(x))
         df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
         df.drop(['text_length'], inplace=True, axis=1)
+    
+    elif encoding_type == 'binary_encoding':
+        unique_keywords = set(df['keyword'])
+        size = np.log2(len(unique_keywords)).round().astype(np.int8)
+        
+        def bin_array(num, m):
+            return np.array(list(np.binary_repr(num).zfill(m))).astype(np.int8)
+        i = 0
 
-    elif 'none':
-        pass
+        map_keywords_binary = {}
+        for keyword in unique_keywords:
+            map_keywords_binary[keyword] = np.flip(bin_array(i,size))
+            i += 1
+        
+        columns_range = range(size - 1,-1,-1)
+        for column in columns_range:
+            df[f'c{column}'] = df['keyword'].map(lambda x: map_keywords_binary.get(x)[column - 1])
 
     else:
         raise KeyError(f'Invalid encoding {encoding_type}')
 
 
-def add_manual_text_features(df):
+def add_manual_text_features(df,encoding_type):
     def _length(x):
         return len(x) if type(x) is str else 0
 
@@ -142,7 +156,7 @@ def add_manual_text_features(df):
         _add_length_features(df)
         return
 
-    calculate_mean_encoding(df)
+    calculate_mean_encoding(df,encoding_type)
 
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
@@ -185,7 +199,9 @@ def add_manual_text_features(df):
     df['capitals'] = df['text'].apply(lambda comment: sum(1 for c in comment if c.isupper()))
     df['num_unique_words'] = df['text'].apply(lambda x: len(set(w for w in x.split())))
     df['words_vs_unique'] = df['num_unique_words'] / df['word_count']
-
+    
+    df['has_uppercase'] = df['text'].map(lambda x: (1 if (any(c.isupper() for c in x)) else 0))
+    df['has_question_sign'] = df['text'].map(lambda x: (1 if (any(((c =='?') or (c =='¿')) for c in x)) else 0))
 
 def add_location_features(df):
     def count_invalid_chars(x):
@@ -197,7 +213,6 @@ def add_location_features(df):
     
     df['invalid_location_character_count'] = df['location'].map(count_invalid_chars)
     df['location_is_place'] = df['location'].map(lambda x: len(re.findall(r'[a-z]*?,\s*[a-z]*', x.lower())))
-
 
 def _clean_keyword(keyword):
     keyword = keyword.replace('%20', ' ')
