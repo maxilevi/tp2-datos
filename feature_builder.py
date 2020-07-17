@@ -47,8 +47,20 @@ def process_dataset(df, encoding_type='mean', text_type='embeddings', target_dim
     return df2
 
 
-def add_text_bow(df2):
-    pass
+def _add_text_using_vectorizer(df, clean_text, vectorizer):
+    text_values = [ _clean_tweet(x) if clean_text else x for x in df['text'].values]
+    
+    matrix = vectorizer.fit_transform(text_values)
+    feature_names = vectorizer.get_feature_names()
+
+    results_df = pd.DataFrame(matrix.T.todense(), index=feature_names, columns=[n for n in range(len(text_values))])
+    for i in range(len(feature_names)):
+        feature = feature_names[i]
+        feature_column = results_df.loc[feature, :]
+        if feature_column.sum() >= 0.5:
+            df[feature] = results_df.loc[feature, :]
+
+
 
 def add_text_tfidf(df2):
     pass
