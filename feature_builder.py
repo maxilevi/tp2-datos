@@ -62,11 +62,13 @@ def _add_text_using_vectorizer(df, clean_text, vectorizer):
 
 
 
-def add_text_tfidf(df2):
-    pass
+def add_text_bow(df, clean_text):
+    _add_text_using_vectorizer(df, clean_text, CountVectorizer())
+    
 
-def add_feature_hashing(df2):
-    pass
+def add_text_tfidf(df, clean_text):
+    _add_text_using_vectorizer(df, clean_text, TfidfVectorizer())
+
 
 
 def add_text_embeddings(df):
