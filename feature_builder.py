@@ -77,6 +77,7 @@ def reduce_dimensions(df, dims):
     return new_df
 
 
+def add_text_embeddings(df, clean_text):
     global embeddings_dim
     global embeddings
     global embeddings_path
@@ -84,7 +85,7 @@ def reduce_dimensions(df, dims):
     if embeddings is None:
         embeddings = KeyedVectors.load_word2vec_format(embeddings_path, binary=True)
 
-    text_values = [ _clean_tweet(x) for x in df['text'].values]
+    text_values = [ _clean_tweet(x) if clean_text else x for x in df['text'].values]
 
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(text_values)
@@ -115,7 +116,7 @@ def reduce_dimensions(df, dims):
             col.append(embeddings_rows[j][i])
         df[f'text_embedding_{i}'] = pd.Series(col)
 
-def calculate_mean_encoding(df, encoding_type='mean'):
+def calculate_keyword_encoding(df, encoding_type='mean'):
     global mean_encodings
 
     df['keyword'] = df['keyword'].fillna('')
