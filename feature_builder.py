@@ -136,17 +136,17 @@ def calculate_keyword_encoding(df, encoding_type='mean'):
 
         df['mean_encode'] = df['keyword'].map(lambda x: mean_encodings[x])
 
-    elif 'one_hot':
+    elif encoding_type == 'one_hot':
         unique_keywords = set(df['keyword'])
         for keyword in unique_keywords:
             df[keyword] = df['keyword'].map(lambda x: 1 if x == keyword else 0)
 
-    elif 'mean_length':
+    elif encoding_type == 'mean_length':
         df['text_length'] = df['text'].map(lambda x: len(x))
         df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
         df.drop(['text_length'], inplace=True, axis=1)
 
-    elif 'none':
+    elif encoding_type == 'none':
         pass
 
     else:
