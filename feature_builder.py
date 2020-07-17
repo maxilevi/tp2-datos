@@ -160,7 +160,22 @@ def calculate_keyword_encoding(df, encoding_type='mean'):
         df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
         df.drop(['text_length'], inplace=True, axis=1)
 
-    elif encoding_type == 'none':
+    elif encoding_type == 'binary_encoding':
+        unique_keywords = set(df['keyword'])
+        size = np.log2(len(unique_keywords)).round().astype(np.int8)
+
+        def bin_array(num, m):
+            return np.array(list(np.binary_repr(num).zfill(m))).astype(np.int8)
+        i = 0
+        map_keywords_binary = {}
+        for keyword in unique_keywords:
+            map_keywords_binary[keyword] = np.flip(bin_array(i,size))
+            i += 1
+
+        columns_range = range(size - 1,-1,-1)
+        for column in columns_range:
+            df[f'c{column}'] = df['keyword'].map(lambda x: map_keywords_binary.get(x)[column - 1])
+    elif 'none':
         pass
 
     else:
@@ -209,6 +224,8 @@ def add_manual_text_features(df):
     #df['text_in_brackets'] = df['text'].map(lambda x: len(re.findall(r'\[.*?\]', x)))
     df['mention_chars'] = df['text'].map(lambda x: sum(len(x) for x in re.findall(r'@.*?\b', x)))
     df['mention_percentage'] = df['mention_chars'] / df['text_length']
+    df['has_question_sign'] = df['text'].map(lambda x: (1 if (any(((c =='?') or (c =='¿')) for c in x)) else 0))
+    df['has_uppercase'] = df['text'].map(lambda x: (1 if (any(c.isupper() for c in x)) else 0))
 
     time_pattern = r'\d:\d'
     df['time_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
