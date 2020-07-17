@@ -28,8 +28,8 @@ def process_dataset(df, encoding_type='mean', text_type='embeddings', target_dim
     calculate_keyword_encoding(df2, encoding_type=encoding_type)
     add_manual_text_features(df2)
 
-    if text_type == 'embeddings':
-        add_text_embeddings(df2, clean_text=clean_text)
+    if text_type == 'embeddings' or text_type == 'tfidf_embeddings':
+        add_text_embeddings(df2, clean_text=clean_text, combine_type=text_type)
 
     elif text_type == 'tfidf':
         add_text_tfidf(df2, clean_text=clean_text)
@@ -80,7 +80,7 @@ def reduce_dimensions(df, dims):
     return new_df
 
 
-def add_text_embeddings(df, clean_text):
+def add_text_embeddings(df, clean_text, combine_type):
     global embeddings_dim
     global embeddings
     global embeddings_path
@@ -98,19 +98,30 @@ def add_text_embeddings(df, clean_text):
     percentage = len([1 for word in tokenizer.word_index if word in embeddings]) / vocab_size
     print(f"Percentage of words covered in the embeddings = {percentage}")
 
+    if combine_type == 'tfidf_embeddings':
+        vectorizer = TfidfVectorizer()
+        rejoined = [' '.join([ inv_word_index[n] for n in sequence]) for sequence in as_sequences]
+        matrix = vectorizer.fit_transform(rejoined)
+        feature_names = vectorizer.get_feature_names()
+        results_df = pd.DataFrame(matrix.T.todense(), index=feature_names, columns=[n for n in range(len(text_values))])
+
     embeddings_rows = []
     for j in range(len(as_sequences)):
-        avg_embedding = np.zeros(embedding_dim)
+        sentence_embedding = np.zeros(embedding_dim)
         count = 0
         for k in range(len(as_sequences[j])):
             index = as_sequences[j][k]
             word = inv_word_index[index]
             if word in embeddings:
-                avg_embedding += embeddings[word]
+                if combine_type == 'tfidf_embeddings':
+                    sentence_embedding += embeddings[word] * results_df.loc[word, j]
+                else:
+                    sentence_embedding += embeddings[word]
                 count += 1
 
-        avg_embedding = avg_embedding / count if count > 0 else avg_embedding
-        embeddings_rows.append(avg_embedding)
+        if combine_type == 'embeddings':
+            sentence_embedding = sentence_embedding / count if count > 0 else sentence_embedding
+        embeddings_rows.append(sentence_embedding)
     
 
     for i in range(embedding_dim):
