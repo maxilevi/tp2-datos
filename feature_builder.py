@@ -142,7 +142,7 @@ def add_manual_text_features(df):
         _add_length_features(df)
         return
 
-    _calculate_mean_encoding(df)
+    calculate_mean_encoding(df)
 
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
