@@ -50,7 +50,7 @@ def process_dataset(df, encoding_type='mean', text_type='embeddings', target_dim
     return df2
 
 
-def _add_text_using_vectorizer(df, clean_text, vectorizer):
+def _add_text_using_vectorizer(df, vectorizer, clean_text=False):
     text_values = [ _clean_tweet(x) if clean_text else x for x in df['text'].values]
     
     matrix = vectorizer.fit_transform(text_values)
@@ -66,11 +66,11 @@ def _add_text_using_vectorizer(df, clean_text, vectorizer):
 
 
 def add_text_bow(df, clean_text):
-    _add_text_using_vectorizer(df, clean_text, CountVectorizer())
+    _add_text_using_vectorizer(df, CountVectorizer(), clean_text)
     
 
 def add_text_tfidf(df, clean_text):
-    _add_text_using_vectorizer(df, clean_text, TfidfVectorizer())
+    _add_text_using_vectorizer(df, TfidfVectorizer(), clean_text)
 
 
 def reduce_dimensions(df, dims):
