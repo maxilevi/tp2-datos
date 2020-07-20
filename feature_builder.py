@@ -14,13 +14,14 @@ from nltk import word_tokenize
 from sklearn.feature_extraction import FeatureHasher
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.decomposition import PCA
+import spacy
 
 embedding_dim = 300 
 embeddings_path = './data/embeddings/word2vec.bin'
 embeddings = None
 mean_encodings = None
 
-def process_dataset(df, encoding_type='mean', text_type='embeddings', target_dimensions=None, clean_text=False):
+def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=False):
     df2 = df.copy()
     global feature_names
 
@@ -28,8 +29,8 @@ def process_dataset(df, encoding_type='mean', text_type='embeddings', target_dim
     calculate_keyword_encoding(df2, encoding_type=encoding_type)
     add_manual_text_features(df2)
 
-    if text_type == 'embeddings' or text_type == 'tfidf_embeddings':
-        add_text_embeddings(df2, clean_text=clean_text, combine_type=text_type)
+    if text_type == 'embeddings':
+        add_text_embeddings(df2, clean_text=clean_text, use_spacy=use_spacy)
 
     elif text_type == 'tfidf':
         add_text_tfidf(df2, clean_text=clean_text)
@@ -66,11 +67,11 @@ def _add_text_using_vectorizer(df, clean_text, vectorizer):
 
 
 def add_text_bow(df, clean_text):
-    _add_text_using_vectorizer(df, clean_text, CountVectorizer())
+    _add_text_using_vectorizer(df, clean_text, CountVectorizer(ngram_range=(1, 3)))
     
 
 def add_text_tfidf(df, clean_text):
-    _add_text_using_vectorizer(df, clean_text, TfidfVectorizer())
+    _add_text_using_vectorizer(df, clean_text, TfidfVectorizer(ngram_range=(1, 3)))
 
 
 def reduce_dimensions(df, dims):
@@ -80,7 +81,7 @@ def reduce_dimensions(df, dims):
     return new_df
 
 
-def add_text_embeddings(df, clean_text, combine_type):
+def add_text_embeddings(df, clean_text, use_spacy):
     global embeddings_dim
     global embeddings
     global embeddings_path
@@ -88,7 +89,16 @@ def add_text_embeddings(df, clean_text, combine_type):
     if embeddings is None:
         embeddings = KeyedVectors.load_word2vec_format(embeddings_path, binary=True)
 
-    text_values = [ _clean_tweet(x) if clean_text else x for x in df['text'].values]
+    text_values = None
+    if use_spacy:
+        nlp = spacy.load("en_core_web_sm")
+        def _process_tweet_spacy(x):
+            tokens = [t.text for t in nlp(x) if t.pos_ in ['VERB', 'NOUN', 'ADJ', 'PROPN', 'INTJ', 'ADP']]
+            return ' '.join(tokens)
+        text_values = [_process_tweet_spacy(x) for x in df['text'].values]
+    else:
+        text_values = [ _clean_tweet(x) if clean_text else x for x in df['text'].values]
+
 
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(text_values)
@@ -98,13 +108,6 @@ def add_text_embeddings(df, clean_text, combine_type):
     percentage = len([1 for word in tokenizer.word_index if word in embeddings]) / vocab_size
     print(f"Percentage of words covered in the embeddings = {percentage}")
 
-    if combine_type == 'tfidf_embeddings':
-        vectorizer = TfidfVectorizer()
-        rejoined = [' '.join([ inv_word_index[n] for n in sequence]) for sequence in as_sequences]
-        matrix = vectorizer.fit_transform(rejoined)
-        feature_names = vectorizer.get_feature_names()
-        results_df = pd.DataFrame(matrix.T.todense(), index=feature_names, columns=[n for n in range(len(text_values))])
-
     embeddings_rows = []
     for j in range(len(as_sequences)):
         sentence_embedding = np.zeros(embedding_dim)
@@ -113,14 +116,10 @@ def add_text_embeddings(df, clean_text, combine_type):
             index = as_sequences[j][k]
             word = inv_word_index[index]
             if word in embeddings:
-                if combine_type == 'tfidf_embeddings':
-                    sentence_embedding += embeddings[word] * results_df.loc[word, j]
-                else:
-                    sentence_embedding += embeddings[word]
+                sentence_embedding += embeddings[word]
                 count += 1
 
-        if combine_type == 'embeddings':
-            sentence_embedding = sentence_embedding / count if count > 0 else sentence_embedding
+        sentence_embedding = sentence_embedding / count if count > 0 else sentence_embedding
         embeddings_rows.append(sentence_embedding)
     
 
@@ -160,21 +159,21 @@ def calculate_keyword_encoding(df, encoding_type='mean'):
         df['keywords_mean_length_encoding'] = df.groupby('keyword')['text_length'].transform('mean')
         df.drop(['text_length'], inplace=True, axis=1)
 
-    elif encoding_type == 'binary_encoding':
+    elif encoding_type == 'binary':
         unique_keywords = set(df['keyword'])
         size = np.log2(len(unique_keywords)).round().astype(np.int8)
 
         def bin_array(num, m):
             return np.array(list(np.binary_repr(num).zfill(m))).astype(np.int8)
+
         i = 0
         map_keywords_binary = {}
         for keyword in unique_keywords:
             map_keywords_binary[keyword] = np.flip(bin_array(i,size))
             i += 1
 
-        columns_range = range(size - 1,-1,-1)
-        for column in columns_range:
-            df[f'c{column}'] = df['keyword'].map(lambda x: map_keywords_binary.get(x)[column - 1])
+        for column in range(size):
+            df[f'c{column}'] = df['keyword'].map(lambda x: map_keywords_binary[x][column])
     elif 'none':
         pass
 
