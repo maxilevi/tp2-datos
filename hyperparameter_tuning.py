@@ -34,7 +34,7 @@ def random_search(x, y, algorithm, params):
     print('\n Best hyperparameters:')
     print(random_search.best_params_)
     
-def bayesian_optimization(algorithm, space, max_evals = 10):
+def bayesian_optimization(algorithm, space, max_evals = 3):
     
     start_time = timer(None) 
     trials = Trials()
