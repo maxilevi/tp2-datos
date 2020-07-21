@@ -1,7 +1,7 @@
 from datetime import datetime
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
-
+from hyperopt import Trials, STATUS_OK, hp, tpe, fmin
 
 
 #Solo sirve para calcular el tiempo que lleva el random search
@@ -33,3 +33,13 @@ def random_search(x, y, algorithm, params):
     print(random_search.best_score_)
     print('\n Best hyperparameters:')
     print(random_search.best_params_)
+    
+def bayesian_optimization(algorithm, space, max_evals = 10):
+    
+    start_time = timer(None) 
+    trials = Trials()
+    best = fmin(algorithm, space, algo=tpe.suggest, max_evals=max_evals, trials=trials) 
+    timer(start_time)   
+
+    print('\n Best parameters:')
+    print(best)
