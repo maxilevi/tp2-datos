@@ -20,7 +20,7 @@ embeddings_path = './data/embeddings/word2vec.bin'
 embeddings = None
 mean_encodings = None
 
-def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=False):
+def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=False, append_location=False):
     df2 = df.copy()
     global feature_names
 
@@ -28,7 +28,9 @@ def process_dataset(df, encoding_type='binary', text_type='embeddings', target_d
     calculate_keyword_encoding(df2, encoding_type=encoding_type)
     add_manual_text_features(df2)
 
-    text_values = [ _clean_tweet(x) if clean_text else x for x in df2['text'].values]
+    text_values = [x['text'] + (' ' + x['location'] if append_location else '') for i, x in df2.iterrows()]
+    text_values = [_clean_tweet() if clean_text else x for x in text_values]
+    
     if use_spacy:
         import spacy
         nlp = spacy.load("en_core_web_sm")
@@ -36,7 +38,6 @@ def process_dataset(df, encoding_type='binary', text_type='embeddings', target_d
             tokens = [t.text for t in nlp(x) if t.pos_ in ['VERB', 'NOUN', 'ADJ', 'PROPN']]
             return ' '.join(tokens)
         spacy_text_values = [_process_tweet_spacy(x) for x in df2['text'].values]
-
 
     if text_type == 'embeddings':
         add_text_embeddings(df2, text_values=text_values)
