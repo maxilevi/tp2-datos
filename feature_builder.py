@@ -20,13 +20,15 @@ embeddings_path = './data/embeddings/word2vec.bin'
 embeddings = None
 mean_encodings = None
 
-def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=False, append_location=False):
+def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=False, append_location=False, use_manual_features=True):
     df2 = df.copy()
     global feature_names
 
-    add_location_features(df2)
+    if use_manual_features:
+        add_location_features(df2)
     calculate_keyword_encoding(df2, encoding_type=encoding_type)
-    add_manual_text_features(df2)
+    if use_manual_features:
+        add_manual_text_features(df2)
 
     text_values = [x['text'] + (' ' + x['location'] if append_location else '') for i, x in df2.iterrows()]
     text_values = [_clean_tweet() if clean_text else x for x in text_values]
