@@ -23,7 +23,7 @@ embeddings = None
 mean_encodings = None
 spacy_nlp = None
 
-def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=True, use_spacy=True, use_manual_features=True):
+def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=True, use_manual_features=True):
     df2 = df.copy()
     global feature_names
 
@@ -70,7 +70,7 @@ def _generate_spacy_text_values(df):
     def _process_tweet_spacy(x):
         tokens = [t.text for t in spacy_nlp(x) if t.pos_ in ['VERB', 'NOUN', 'ADJ', 'PROPN']]
         return ' '.join(tokens)
-    return [_process_tweet_spacy(x).lower() for x in df['text'].values]
+    return [_process_tweet_spacy(x) for x in df['text'].values]
 
 
 def _add_text_using_vectorizer(df, vectorizer, text_values):    
