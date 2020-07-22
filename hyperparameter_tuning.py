@@ -48,7 +48,7 @@ def bayesian_optimization(algorithm, space, max_evals = 3):
     
 def GridSearch(x, y, algorithm, params):
     
-    grid = clf = GridSearchCV(algorithm, params, n_iter=15, scoring='f1', n_jobs=4)
+    grid = clf = GridSearchCV(algorithm, params, scoring='f1', n_jobs=3)
     
     
     start_time = timer(None) 
