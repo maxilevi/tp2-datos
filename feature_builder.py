@@ -23,7 +23,7 @@ embeddings = None
 mean_encodings = None
 spacy_nlp = None
 
-def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=True, use_manual_features=True):
+def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=True, use_manual_features=True, remove_target=True):
     df2 = df.copy()
     global feature_names
 
@@ -52,7 +52,7 @@ def process_dataset(df, encoding_type='binary', text_type='embeddings', target_d
         pass
     
     df2.drop(['text', 'location', 'keyword', 'id'], axis=1, inplace=True)
-    if 'target' in df2.columns:
+    if 'target' in df2.columns and remove_target:
         df2.drop(['target'], axis=1, inplace=True)
 
     if target_dimensions:
