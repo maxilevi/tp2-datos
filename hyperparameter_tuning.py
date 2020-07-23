@@ -15,10 +15,9 @@ def timer(start_time=None):
 
         
 #Recibe el algoritmo a tunear y una lista de sus hiperparametros
-def random_search(x, y, algorithm, params):
+def random_search(x, y, algorithm, params,folds,param_comb):
 
-    folds = 5
-    param_comb = 40   # folds * param_comb es la cantidad total de combinaciones que va a hacer, es dependiente del tiempo.
+# folds * param_comb es la cantidad total de fits, que depende del tiempo.
     skf = StratifiedKFold(n_splits=folds, shuffle = True, random_state = 1001)
 
 
