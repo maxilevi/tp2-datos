@@ -2,6 +2,7 @@ from datetime import datetime
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from sklearn.model_selection import GridSearchCV
+import matplotlib.pyplot as plt
 
 #Solo sirve para calcular el tiempo que lleva el random search
 def timer(start_time=None):
@@ -44,6 +45,12 @@ def bayesian_optimization(algorithm, space, max_evals = 3):
 
     print('\n Best parameters:')
     print(best)
+    x = list(range(1,max_evals + 1))
+    y = []
+    for result in trials.results:
+      y.append(result['loss'] * -1) 
+    plt.scatter(x,y)
+
     
 def GridSearch(x, y, algorithm, params):
     
