@@ -9,7 +9,7 @@ def meanf1(list_of_algorithms,x,y):
     
     for algorithm in list_of_algorithms:
         
-        scores = cross_val_score(algorithm, x, y, cv=2, scoring='f1_macro')
+        scores = cross_val_score(algorithm, x, y, cv=4, scoring='f1_macro')
         score_total=scores.mean()+score_total
         i=i+1
         
