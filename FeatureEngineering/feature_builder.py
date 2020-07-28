@@ -17,8 +17,8 @@ import spacy
 import os
 
 embedding_dim = 300 
-uncompressed_embeddings_path = './data/embeddings/word2vec-uncompressed'
-embeddings_path = './data/embeddings/word2vec.bin'
+uncompressed_embeddings_path = '../data/embeddings/word2vec-uncompressed'
+embeddings_path = '../data/embeddings/word2vec.bin'
 embeddings = None
 mean_encodings = None
 spacy_nlp = None
