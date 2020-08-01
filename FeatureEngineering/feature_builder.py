@@ -23,7 +23,7 @@ embeddings = None
 mean_encodings = None
 spacy_nlp = None
 
-def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=True, use_manual_features=True, remove_target=True):
+def process_dataset(df, encoding_type='binary', text_type='embeddings', target_dimensions=None, clean_text=False, use_spacy=True, use_manual_features=True, remove_target=True,tree=False):
     df2 = df.copy()
     global feature_names
 
@@ -31,7 +31,7 @@ def process_dataset(df, encoding_type='binary', text_type='embeddings', target_d
         add_location_features(df2)
     calculate_keyword_encoding(df2, encoding_type=encoding_type)
     if use_manual_features:
-        add_manual_text_features(df2)
+        add_manual_text_features(df2,tree)
 
     text_values = df2['text'].values
     if clean_text:
@@ -191,7 +191,7 @@ def calculate_keyword_encoding(df, encoding_type='mean'):
         raise KeyError(f'Invalid encoding {encoding_type}')
 
 
-def add_manual_text_features(df):
+def add_manual_text_features(df,tree):
     def _length(x):
         return len(x) if type(x) is str else 0
 
@@ -202,6 +202,12 @@ def add_manual_text_features(df):
         _add_length_features(df)
         return
 
+    if(tree==False):
+         df['emojis_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
+         df['unique_word_count'] = df['text'].map(lambda x: len(set(str(x).split())))
+         df['mention_chars'] = df['text'].map(lambda x: sum(len(x) for x in re.findall(r'@.*?\b', x)))
+         df['mention_percentage'] = df['mention_chars'] / df['text_length']
+        
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
     df['location_length'] = df['location'].map(_length)
@@ -214,7 +220,7 @@ def add_manual_text_features(df):
     df['interrogation_count'] = df['text'].map(lambda x: x.count('?'))
     df['url_count'] = df['text'].map(lambda x: len([w for w in str(x).lower().split() if 'http' in w or 'https' in w]))
     df['word_count'] = df['text'].map(lambda x: len(str(x).split()))
-    df['unique_word_count'] = df['text'].map(lambda x: len(set(str(x).split())))
+    
     df['space_in_keyword'] = df['keyword'].map(lambda x: x.count(' '))
     df['number_count'] = df['text'].map(lambda x: len([1 for y in x if y.isdigit()]))
     df['single_quote_count'] = df['text'].map(lambda x: x.count('\''))
@@ -231,15 +237,15 @@ def add_manual_text_features(df):
     df['unique_chars'] = df['text'].map(lambda x: len(set(x)))
     df['unique_chars_percentage'] = df['unique_chars'] / df['text_length']
     #df['text_in_brackets'] = df['text'].map(lambda x: len(re.findall(r'\[.*?\]', x)))
-    df['mention_chars'] = df['text'].map(lambda x: sum(len(x) for x in re.findall(r'@.*?\b', x)))
-    df['mention_percentage'] = df['mention_chars'] / df['text_length']
+    
+    
     df['has_question_sign'] = df['text'].map(lambda x: (1 if (any(((c =='?') or (c =='¿')) for c in x)) else 0))
     df['has_uppercase'] = df['text'].map(lambda x: (1 if (any(c.isupper() for c in x)) else 0))
 
     time_pattern = r'\d:\d'
     df['time_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
     emoji_pattern = r'(:|;)\s*?(\)|D|d|p|s|\/|\(|S|P)'
-    df['emojis_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
+   
 
     df['word_density'] = df['word_count'] / (df['text_length'] + 1)
     df['capitals'] = df['text'].apply(lambda comment: sum(1 for c in comment if c.isupper()))
