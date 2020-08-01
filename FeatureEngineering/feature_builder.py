@@ -202,11 +202,7 @@ def add_manual_text_features(df,tree):
         _add_length_features(df)
         return
 
-    if(tree==False):
-         df['emojis_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
-         df['unique_word_count'] = df['text'].map(lambda x: len(set(str(x).split())))
-         df['mention_chars'] = df['text'].map(lambda x: sum(len(x) for x in re.findall(r'@.*?\b', x)))
-         df['mention_percentage'] = df['mention_chars'] / df['text_length']
+
         
     df['keyword_length'] = df['keyword'].map(_length)
     df['text_length'] = df['text'].map(_length)
@@ -251,6 +247,12 @@ def add_manual_text_features(df,tree):
     df['capitals'] = df['text'].apply(lambda comment: sum(1 for c in comment if c.isupper()))
     df['num_unique_words'] = df['text'].apply(lambda x: len(set(w for w in x.split())))
     df['words_vs_unique'] = df['num_unique_words'] / df['word_count']
+
+    if(tree==False):
+         df['emojis_in_text'] = df['text'].map(lambda x: len(re.findall(time_pattern, x)))
+         df['unique_word_count'] = df['text'].map(lambda x: len(set(str(x).split())))
+         df['mention_chars'] = df['text'].map(lambda x: sum(len(x) for x in re.findall(r'@.*?\b', x)))
+         df['mention_percentage'] = df['mention_chars'] / df['text_length']
 
 
 def add_location_features(df):
