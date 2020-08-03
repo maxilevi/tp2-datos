@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def process(train_df):
+def generate_df(train_df):
     train_df['target_new'] = train_df['target'].copy() 
 
     train_df.loc[train_df['text'] == 'like for the music video I want some real action shit like burning buildings and police chases not some weak ben winston shit', 'target_new'] = 0
