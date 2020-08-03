@@ -23,7 +23,7 @@ def generate_df(train_df):
     train_df.loc[train_df['text'] == "#Allah describes piling up #wealth thinking it would last #forever as the description of the people of #Hellfire in Surah Humaza. #Reflect", 'target_new'] = 0
     train_df.loc[train_df['text'] == "that horrible sinking feeling when youÛªve been at home on your phone for a while and you realise its been on 3G this whole time", 'target_new'] = 0
 
-    train_df = train_df.drop('target_new', axis=1)
+    train_df = train_df.drop('target', axis=1)
     train_df.columns=['id','keyword','location','text','target']
     
     train_df_processed=train_df.reset_index()
