@@ -23,3 +23,8 @@ Ya habiendo probado todos los algoritmos se procedió a ensamblarlos, algunos en
 Dentro de este informe y del repositorio provisto en la primer carilla van a poder observar cómo fue que hicimos todo lo anterior mencionado. 
 
 Esperamos que les resulte interesante y puedan llegar a entender todos los pasos que realizamos.
+
+## Colabs
+
+[RoBERTa](https://colab.research.google.com/drive/1frFhlSWtsrwT14CAAsYCY5tTJ-iqz-P4?usp=sharing)
+[XLNet](https://colab.research.google.com/drive/1i23hQAcW5-1cUJg8YCSuSXDcAldV3KZE?usp=sharing)
